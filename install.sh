@@ -52,31 +52,26 @@ mkdir -p uploads
 mkdir -p default_fw
 mkdir -p static/sop
 
-echo -e "${YELLOW}Step 6: Setting up systemd service...${NC}"
-# Create systemd service file (vlabiisc.service)
-cat > vlabiisc.service << 'EOF'
-[Unit]
-Description=Virtual Embedded Lab
-After=network.target
+echo -e "${YELLOW}Step 6: Setting up systemd services...${NC}"
 
-[Service]
-User=pi
-WorkingDirectory=/home/pi/virtual_lab
-ExecStart=/home/pi/virtual_lab/venv/bin/python app.py
-Restart=always
-Environment=PYTHONUNBUFFERED=1
+# Copy service files from services folder
+if [ -d "services" ]; then
+    for service_file in services/*.service; do
+        if [ -f "$service_file" ]; then
+            service_name=$(basename "$service_file")
+            echo "  Installing $service_name..."
+            sudo cp "$service_file" /etc/systemd/system/
+            sudo chmod 644 "/etc/systemd/system/$service_name"
+        fi
+    done
+else
+    echo -e "${RED}Error: services folder not found!${NC}"
+    exit 1
+fi
 
-[Install]
-WantedBy=multi-user.target
-EOF
-
-# Copy service file to systemd directory
-sudo cp vlabiisc.service /etc/systemd/system/
-sudo chmod 644 /etc/systemd/system/vlabiisc.service
-
-# Reload systemd and enable service
+# Reload systemd and enable all services
 sudo systemctl daemon-reload
-sudo systemctl enable vlabiisc.service
+sudo systemctl enable vlabiisc.service audio_stream.service mjpg-streamer.service
 
 echo -e "${YELLOW}Step 7: Configuring permissions...${NC}"
 sudo usermod -a -G dialout $USER
@@ -96,3 +91,4 @@ echo "  sudo journalctl -u vlabiisc -f"
 echo ""
 echo -e "${YELLOW}Note: Please reboot for serial port permissions to take effect${NC}"
 echo "  sudo reboot"
+echo "  sudo journalctl -u vlabiisc -f"

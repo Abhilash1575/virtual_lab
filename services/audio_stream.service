@@ -1,0 +1,14 @@
+[Unit]
+Description=Audio Streaming Server
+After=network.target
+
+[Service]
+Type=simple
+User=pi
+WorkingDirectory=/home/pi/virtual_lab/audio
+ExecStart=/home/pi/virtual_lab/venv/bin/python3 /home/pi/virtual_lab/audio/server.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
