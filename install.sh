@@ -33,7 +33,8 @@ sudo apt install -y \
     esptool \
     alsa-utils \
     libportaudio2 \
-    ffmpeg
+    ffmpeg \
+    ustreamer
 
 echo -e "${YELLOW}Step 3: Setting up Python virtual environment...${NC}"
 if [ ! -d "venv" ]; then
