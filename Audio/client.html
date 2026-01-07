@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+
+<body>
+    <h2>Audio Stream Client</h2>
+    <audio id="player" autoplay></audio>
+    <div>
+        <button id="startBtn" onclick="start()">Start Streaming</button>
+        <button id="stopBtn" onclick="stop()" disabled>Stop Streaming</button>
+    </div>
+
+    <script>
+        let pc = null;
+
+        async function start() {
+            document.getElementById("startBtn").disabled = true;
+            document.getElementById("stopBtn").disabled = false;
+
+            pc = new RTCPeerConnection();
+
+            pc.ontrack = (event) => {
+                document.getElementById("player").srcObject = event.streams[0];
+            };
+
+            pc.addTransceiver('audio', { direction: 'recvonly' });
+
+            const offer = await pc.createOffer();
+            await pc.setLocalDescription(offer);
+
+            const response = await fetch("/offer", {
+                method: "POST",
+                body: JSON.stringify({
+                    sdp: pc.localDescription.sdp,
+                    type: pc.localDescription.type
+                }),
+                headers: { "Content-Type": "application/json" }
+            });
+
+            const answer = await response.json();
+            await pc.setRemoteDescription(answer);
+        }
+
+        function stop() {
+            if (pc) {
+                pc.close();
+                pc = null;
+            }
+            document.getElementById("player").srcObject = null;
+            document.getElementById("startBtn").disabled = false;
+            document.getElementById("stopBtn").disabled = true;
+        }
+    </script>
+</body>
+
+</html>
