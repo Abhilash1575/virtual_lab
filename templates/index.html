@@ -206,7 +206,7 @@ button{padding:8px 10px;border-radius:6px;border:none;cursor:pointer}
     <div class="card">
       <h3>Live Video Feed</h3>
       <div class="video-container">
-        <img id="videoFeed" src="http://10.114.62.56:8080/?action=stream&resolution=1920x1080&quality=100" alt="camera">
+        <img id="videoFeed" alt="camera">
     <audio id="audioFeed" autoplay></audio>
         <button id="expandVideoBtn" class="zoom-btn expand" title="Open Video in New Tab">[ ]</button>
         <button id="zoomReset" class="zoom-btn reset">■</button>
@@ -226,6 +226,20 @@ const sessionEndTimeFromServer = {{ session_end_time | tojson }};
 </script>
 
 <script>
+// Dynamic host configuration - automatically detects IP and ports
+const BASE_URL = window.location.origin;  // e.g., http://192.168.1.100:5000
+const VIDEO_PORT = 8080;  // Camera stream port - change if different
+const AUDIO_PORT = 9000;  // Audio server port - change if different
+
+// Video stream URL - uses same host as current page but different port for camera
+const videoUrl = `${window.location.protocol}//${window.location.hostname}:${VIDEO_PORT}/?action=stream&resolution=1920x1080&quality=100`;
+
+// Audio server URL - uses same host but audio port
+const audioServerUrl = `${window.location.protocol}//${window.location.hostname}:${AUDIO_PORT}`;
+
+console.log('Video URL:', videoUrl);
+console.log('Audio server URL:', audioServerUrl);
+
 /* ----------------- SOCKET.IO ----------------- */
 const socket = io.connect(window.location.origin, { transports: ['websocket', 'polling'] });
 
@@ -968,6 +982,9 @@ pauseChartBtn.addEventListener('click', () => { running = !running; pauseChartBt
 
 /* Try load saved layout on start (non-blocking) */
 window.addEventListener('load', () => {
+  // Set video feed dynamically
+  document.getElementById('videoFeed').src = videoUrl;
+  
   const raw = localStorage.getItem('evl_layout'); if(raw){ try{ const arr = JSON.parse(raw); dynamicControls.innerHTML=''; arr.forEach(cfg=>createControlElement(cfg)); }catch(e){} }
 });
 
@@ -1012,7 +1029,8 @@ async function startAudio() {
         const offer = await audioPC.createOffer();
         await audioPC.setLocalDescription(offer);
 
-        const response = await fetch('http://10.114.62.56:9000/offer', {
+        // Use dynamic audio server URL
+        const response = await fetch(`${audioServerUrl}/offer`, {
             method: 'POST',
             body: JSON.stringify({
                 sdp: audioPC.localDescription.sdp,

@@ -12,7 +12,7 @@ html, body { height: 100%; margin: 0; font-family: 'Inter', sans-serif; backgrou
 </style>
 </head>
 <body>
-<img id="videoFeed" class="fullscreen-video" src="http://10.114.62.56:8080/?action=stream&resolution=1920x1080&quality=100" alt="camera">
+<img id="videoFeed" class="fullscreen-video" alt="camera">
 <audio id="audioFeed" autoplay></audio>
 <div class="controls">
     <button id="backBtn" class="button">Back to Main</button>
@@ -40,6 +40,23 @@ document.getElementById('backBtn').addEventListener('click', () => {
     window.close();
 });
 
+// Dynamic host configuration - automatically detects IP and ports
+const BASE_URL = window.location.origin;  // e.g., http://192.168.1.100:5000
+const VIDEO_PORT = 8080;  // Camera stream port - change if different
+const AUDIO_PORT = 9000;  // Audio server port - change if different
+
+// Video stream URL - uses same host as current page but different port for camera
+const videoUrl = `${window.location.protocol}//${window.location.hostname}:${VIDEO_PORT}/?action=stream&resolution=1920x1080&quality=100`;
+
+// Audio server URL - uses same host but audio port
+const audioServerUrl = `${window.location.protocol}//${window.location.hostname}:${AUDIO_PORT}`;
+
+console.log('Video URL:', videoUrl);
+console.log('Audio server URL:', audioServerUrl);
+
+// Set video feed dynamically
+document.getElementById('videoFeed').src = videoUrl;
+
 // Audio setup (similar to main page)
 let audioPC = null;
 let audioStarting = false;
@@ -66,7 +83,8 @@ async function startAudio() {
         const offer = await audioPC.createOffer();
         await audioPC.setLocalDescription(offer);
 
-        const response = await fetch('http://172.30.241.15:9000/offer', {
+        // Use dynamic audio server URL
+        const response = await fetch(`${audioServerUrl}/offer`, {
             method: 'POST',
             body: JSON.stringify({
                 sdp: audioPC.localDescription.sdp,
