@@ -3,9 +3,9 @@ Description=Virtual Embedded Lab
 After=network.target
 
 [Service]
-User=pi
-WorkingDirectory=/home/pi/virtual_lab
-ExecStart=/home/pi/virtual_lab/venv/bin/python app.py
+User=%i
+WorkingDirectory=%h/virtual_lab
+ExecStart=%h/virtual_lab/venv/bin/python app.py
 Restart=always
 Environment=PYTHONUNBUFFERED=1
 
