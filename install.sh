@@ -3,6 +3,17 @@
 # Virtual Embedded Lab - Multi-OS Installer
 # Entry point script - detects OS and runs appropriate installer
 
+#!/usr/bin/env bash
+set -e
+
+REAL_USER=${SUDO_USER:-$(whoami)}
+HOME_DIR=$(eval echo "~$REAL_USER")
+PROJECT_DIR="$HOME_DIR/virtual_lab"
+
+echo "Installing for user: $REAL_USER"
+echo "Home directory: $HOME_DIR"
+
+
 set -e
 
 echo "========================================"
